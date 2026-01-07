@@ -11,7 +11,7 @@ SEARCH_LIMIT = 5
 BM25_K1 = 1.5
 BM25_B = 0.75
 
-MODULE_ROOT = os.path.dirname(os.path.dirname(__file__))
+MODULE_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 DATA_PATH = os.path.join(MODULE_ROOT, "data", "movies.json")
 STOPWORDS_PATH = os.path.join(MODULE_ROOT, "data", "stopwords.txt")
 CACHE_PATH = os.path.join(MODULE_ROOT, "cache")
@@ -35,6 +35,7 @@ def search_command(query: str, limit: int = SEARCH_LIMIT) -> list[dict]:
 
 
 def load_data() -> dict:
+    print(DATA_PATH)
     with open(
         DATA_PATH,
         "r",
@@ -147,15 +148,16 @@ class InvertedIndex:
     def bm25(self, doc_id: int, term: str) -> float:
         return self.get_bm25_tf(doc_id, term) * self.get_bm25_idf(term)
 
-    def bm25_serach(self, query: str, limit: int = SEARCH_LIMIT) -> list:
+    def bm25_search(self, query: str, limit: int = SEARCH_LIMIT) -> list:
         tokens = preprocess(query)
         score = {}
-        for id, document in self.index.items():
+        for id, _ in self.docmap.items():
             total_score = 0
             for t in tokens:
                 total_score += self.bm25(id, t)
             score[id] = total_score
-        score = dict(sorted(score.items(), key=lambda item: item[1], reverse=True))
+        score = sorted(score.items(), key=lambda item: item[1], reverse=True)
+        return score[:limit]
 
     def build(self):
         data = load_data()
