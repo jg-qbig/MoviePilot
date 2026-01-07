@@ -11,8 +11,6 @@
     systems = [
       "x86_64-linux"
       "aarch64-linux"
-      "x86_64-darwin"
-      "aarch64-darwin"
     ];
 
     forAllSystems = nixpkgs.lib.genAttrs systems;
@@ -22,29 +20,52 @@
         pkgs = import nixpkgs {
           inherit system;
         };
-      in {
-        default = pkgs.mkShell {
-          packages = with pkgs; [
-            uv
-            python312
-          ];
-          shellHook = ''
-            # Initialize uv project if needed
-            if [ ! -f "pyproject.toml" ]; then
-              echo "Initializing uv project..."
-              uv init
-            fi
 
-            # Create python virtual env if needed
-            if [ ! -d ".venv" ]; then
-              echo "Creating Python virtual environment with uv..."
-              uv venv
-            fi
+        fhsEnv = pkgs.buildFHSEnv {
+          name = "pythonFHS";
 
-            # activate python venv automatically
-            source .venv/bin/activate
-          '';
+          targetPkgs = pkgs:
+            with pkgs; [
+              # Python tooling
+              uv
+
+              # Build toolchain for C extensions
+              gcc
+              gfortran
+              pkg-config
+              cmake
+
+              # Runtime C/C++ libs
+              stdenv.cc.cc.lib
+
+              # NumPy native deps
+              openblas
+              zlib
+              openssl
+            ];
+
+          profile =
+            /*
+            bash
+            */
+            ''
+              if [ ! -f "pyproject.toml" ]; then
+                echo "Initializing uv project..."
+                uv init
+              fi
+
+              if [ ! -d ".venv" ]; then
+                echo "Creating Python virtual environment with uv..."
+                uv venv
+              fi
+
+              source .venv/bin/activate
+            '';
+
+          runScript = "bash";
         };
+      in {
+        default = fhsEnv.env;
       }
     );
   };
