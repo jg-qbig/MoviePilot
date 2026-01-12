@@ -16,9 +16,11 @@ def setup_gemini() -> genai.Client:
     return client
 
 
-def prompt_gemini(prompt: str) -> str:
+def prompt_gemini(prompt) -> str:
     client = setup_gemini()
     response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+    if response.usage_metadata is not None:
+        print(f"Total tokens: {response.usage_metadata.total_token_count}")
     return str(response.text)
 
 
@@ -194,8 +196,46 @@ def rerank_results(
             )
         return results
 
-    for i, r in enumerate(results, 1):
-        print(
-            f"{i}. {r["title"]}\n\tRRF Score: {r["rrf_score"]}\n\tBM25: {r["bm25_rank"]}, Semantic: {r["semantic_rank"]}\n\t{r["document"][:100]}"
-        )
+    results = sorted(results, key=lambda x: x["rrf_score"], reverse=True)[:limit]
+
+    # for i, r in enumerate(results, 1):
+    #    print(
+    #        f"{i}. {r["title"]}\n\tRRF Score: {r["rrf_score"]}\n\tBM25: {r["bm25_rank"]}, Semantic: {r["semantic_rank"]}\n\t{r["document"][:100]}"
+    #    )
     return results
+
+
+def llm_evaluation(query: str, results: list[dict]):
+    results_str = ""
+    for i, r in enumerate(results, 1):
+        results_str += f"{i}. {r["title"]}\n\tRRF Score: {r["rrf_score"]}\n\tBM25: {r["bm25_rank"]}, Semantic: {r["semantic_rank"]}\n\t{r["document"][:100]}"
+
+    prompt = f"""Rate how relevant each result is to this query on a 0-3 scale:
+
+    Query: "{query}"
+
+    Results:
+    {results_str}
+
+    Scale:
+    - 3: Highly relevant
+    - 2: Relevant
+    - 1: Marginally relevant
+    - 0: Not relevant
+
+    Do NOT give any numbers out than 0, 1, 2, or 3.
+
+    Return ONLY the scores in the same order you were given the documents. Return a valid JSON list, nothing else. For example:
+
+    [2, 0, 3, 2, 0, 1]"""
+
+    response = prompt_gemini(prompt)
+    if response is None:
+        return []
+
+    response = response[response.find("[") : response.find("]") + 1]
+
+    scores = json.loads(response)
+
+    for i, (r, s) in enumerate(zip(results, scores)):
+        print(f"{i}. {r["title"]}: {s}/3")
