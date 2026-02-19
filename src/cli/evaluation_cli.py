@@ -2,11 +2,11 @@ import argparse
 import json
 import os
 
-from lib.utils import PROJECT_ROOT
-from hybrid_search_cli import rrf_search_command
+from src.lib.utils import PROJECT_ROOT
+from src.cli.hybrid_search_cli import rrf_search_command
 
 
-def main():
+def main(args_list=None) -> None:
     parser = argparse.ArgumentParser(description="Search Evaluation CLI")
     parser.add_argument(
         "--limit",
@@ -15,7 +15,11 @@ def main():
         help="Number of results to evaluate (k for precision@k, recall@k)",
     )
 
-    args = parser.parse_args()
+    if args_list is None:
+        args = parser.parse_args()
+    else:
+        args = parser.parse_args(args_list)
+
     limit = args.limit
 
     # run evaluation logic here

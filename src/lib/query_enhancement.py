@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from google import genai
 from sentence_transformers import CrossEncoder
 
-from .utils import DEFAULT_SEARCH_LIMIT
+from src.lib.utils import SEARCH_LIMIT
 
 
 def setup_gemini() -> genai.Client:
@@ -142,7 +142,7 @@ def rerank_results(
     query: str,
     results: list[dict],
     method: str = "",
-    limit: int = DEFAULT_SEARCH_LIMIT,
+    limit: int = SEARCH_LIMIT,
 ) -> list[dict]:
     if method == "individual":
         for r in results:

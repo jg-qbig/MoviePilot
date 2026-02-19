@@ -1,9 +1,13 @@
 import argparse
 
-from lib.multimodal_search import verify_image_embedding, image_search_command
+from src.lib.multimodal_search import (
+    describe_image,
+    verify_image_embedding,
+    image_search_command,
+)
 
 
-def main():
+def main(args_list=None):
     parser = argparse.ArgumentParser(description="Retrieval Augmented Generation CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
@@ -12,12 +16,21 @@ def main():
     )
     verify_parser.add_argument("image_path", type=str, help="Path to image to embed")
 
+    describe_parser = subparsers.add_parser(
+        "describe_image", help="Let model describe image as text."
+    )
+    describe_parser.add_argument("--image", type=str, help="Path to image")
+    describe_parser.add_argument("--query", type=str, help="Search query")
+
     image_search_parser = subparsers.add_parser(
         "image_search", help="Search movie based on image"
     )
     image_search_parser.add_argument("image_path", type=str, help="Path to image")
 
-    args = parser.parse_args()
+    if args_list is None:
+        args = parser.parse_args()
+    else:
+        args = parser.parse_args(args_list)
 
     match args.command:
         case "image_search":
@@ -26,6 +39,8 @@ def main():
                 print(
                     f"{i}. {r["title"]} (similarity: {r["similarity"]:.3f})\n\t{r["description"][:100]}"
                 )
+        case "describe_image":
+            print(f"Rewritten query: {describe_image(args.query, args.image)}")
         case "verify_image_embedding":
             verify_image_embedding(args.image_path)
         case _:

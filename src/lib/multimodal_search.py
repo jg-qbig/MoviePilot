@@ -4,9 +4,9 @@ from google.genai.types import Part
 from PIL import Image
 from sentence_transformers import SentenceTransformer
 
-from .query_enhancement import prompt_gemini
-from .semantic_search import cosine_similarity
-from .utils import load_data
+from src.lib.query_enhancement import prompt_gemini
+from src.lib.semantic_search import cosine_similarity
+from src.lib.utils import load_movies
 
 
 class MultimodalSearch:

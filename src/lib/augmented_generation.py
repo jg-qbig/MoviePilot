@@ -1,4 +1,4 @@
-from .query_enhancement import prompt_gemini
+from src.lib.query_enhancement import prompt_gemini
 
 
 def augment_prompt(query: str, docs: list):

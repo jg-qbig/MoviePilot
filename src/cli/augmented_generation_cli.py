@@ -1,7 +1,7 @@
 import argparse
 
-from hybrid_search_cli import rrf_search_command
-from lib.augmented_generation import (
+from src.cli.hybrid_search_cli import rrf_search_command
+from src.lib.augmented_generation import (
     augment_prompt,
     summarize,
     summarize_with_citations,
@@ -9,7 +9,7 @@ from lib.augmented_generation import (
 )
 
 
-def main():
+def main(args_list=None) -> None:
     parser = argparse.ArgumentParser(description="Retrieval Augmented Generation CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
@@ -42,7 +42,10 @@ def main():
         "--limit", type=int, default=5, help="Number of search results to be retrieved"
     )
 
-    args = parser.parse_args()
+    if args_list is None:
+        args = parser.parse_args()
+    else:
+        args = parser.parse_args(args_list)
 
     match args.command:
         case "question":
