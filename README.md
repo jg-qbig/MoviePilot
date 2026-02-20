@@ -1,31 +1,30 @@
 # MoviePilot
 
-MoviePilot is a **Retrieval-Augmented Generation (RAG)** search engine designed for movie datasets. It combines keyword-based retrieval with semantic, hybrid, and multimodal search techniques to provide relevant movie discovery and LLM-powered capabilities.
+MoviePilot is a Retrieval-Augmented Generation (RAG) search engine designed for movie datasets. It combines keyword-based retrieval with semantic search and also adds multimodal search, query enhancement and rag techniques to provide relevant movie discovery.
 
 ## Description
 
 MoviePilot combines different traditional and modern information retrieval techniques from basic term matching to AI-driven retrieval:
 
-* **Keyword Search:** Uses Okapi BM25 and TF-IDF for term matching.
-* **Semantic Search:** Utilizes vector embeddings and chunking strategies (fixed and semantic) to understand the context of queries.
-* **Hybrid Search:** Merges keyword and semantic results using **Reciprocal Rank Fusion (RRF)** and weighted scoring for balanced retrieval.
-* **Multimodal Search:** Enables movie discovery using image-to-text and image-embedding capabilities.
-* **RAG Pipeline:** Integrates with Google's Gemini LLM to generate summaries, answer questions, and provide cited responses based on retrieved movie documents.
+* Keyword Search: Uses Okapi BM25 and TF-IDF for term matching.
+* Semantic Search: Utilizes vector embeddings and chunking strategies (fixed and semantic) to understand the context of queries.
+* Hybrid Search: Merges keyword and semantic results using Reciprocal Rank Fusion (RRF) and weighted scoring for balanced retrieval.
+* Multimodal Search: Enables movie discovery using image-to-text and image-embedding capabilities.
+* RAG: Integrates with Google's Gemini LLM to generate summaries, answer questions, and provide cited responses based on retrieved movie documents.
 
 ## Motivation
 
-The primary motivation for this project was to gain **hands-on experience** with the core components of modern search systems. It serves as a practical learning opportunity for:
+The primary motivation for this project was to gain hands-on experience with the core components of modern search systems. It serves as a practical learning opportunity for:
 
-* **Information Retrieval (IR):** Understanding the mathematical foundations of keyword search, such as term frequency (TF) and inverse document frequency (IDF).
-* **RAG System Design:** Learning how to build an end-to-end pipeline that connects a retrieval engine to a Large Language Model (LLM) to reduce hallucinations and provide grounded answers.
-* **Hybrid Strategies:** Experimenting with combining dense (semantic) and sparse (keyword) retrieval to overcome the limitations of each individual method.
-* **Performance Tuning:** Learning how to evaluate search quality quantitatively using standard industry metrics.
+* Information Retrieval (IR): Understanding the mathematical foundations of keyword search, such as term frequency (TF) and inverse document frequency (IDF).
+* RAG System Design: Learning how to build an end-to-end pipeline that connects a retrieval engine to a Large Language Model (LLM) to reduce hallucinations and provide grounded answers.
+* Hybrid Strategies: Experimenting with combining semantic and keyword retrieval to overcome the limitations of each individual method.
 
 ## Quick Start
 
 ### 1. Prerequisites
 
-Ensure you have Python 3.12+ installed.
+Ensure you have Python 3.12+ and uv installed.
 
 ### 2. Setup Environment
 
@@ -49,10 +48,10 @@ GEMINI_API_KEY=your_api_key_here
 You can install the project and its dependencies using `pip`:
 
 ```bash
-pip install .
+uv sync --locked
 
 ```
-
+<!--
 ### 4. Prepare the Data
 
 The project expects a `movies.json` file in the `./data` directory.
@@ -73,7 +72,7 @@ python keyword_search_cli.py build
 ---
 ## Usage
 
-MoviePilot provides several CLI entrypoints for different search and generation tasks located in `./cli`.
+MoviePilot provides several CLI entrypoints for different search and generation tasks.
 
 ### 1. Keyword Search (`keyword_search_cli.py`)
 
@@ -130,6 +129,7 @@ Tools for handling images and measuring performance.
 | `evaluation_cli.py` | `--limit` | Calculates Precision@k, Recall@k, and F1 scores against a golden dataset. |
 
 ---
+-->
 
 ## Contributing
 
