@@ -42,7 +42,7 @@ class HybridSearch:
             doc_id = result["id"]
             combined_results[doc_id] = {
                 "title": result["title"],
-                "description": result["document"],
+                "document": result["document"],
                 "bm25_score": result["norm_score"],
                 "semantic_score": 0.0,
             }
@@ -52,7 +52,7 @@ class HybridSearch:
             if doc_id not in combined_results:
                 combined_results[doc_id] = {
                     "title": result["title"],
-                    "description": result["document"],
+                    "document": result["document"],
                     "bm25_score": 0.0,
                     "semantic_score": result["norm_score"],
                 }
@@ -75,7 +75,7 @@ class HybridSearch:
                 format_results(
                     doc_id=doc_id,
                     title=doc["title"],
-                    document=doc["description"],
+                    document=doc["document"],
                     score=doc["weighted_score"],
                 )
             )
@@ -92,7 +92,7 @@ class HybridSearch:
             doc_id = result["id"]
             combined_results[doc_id] = {
                 "title": result["title"],
-                "description": result["document"],
+                "document": result["document"],
                 "bm25_rank": rank,
                 "semantic_rank": None,
                 "rrf_score": rrf_score(rank, k),
@@ -103,7 +103,7 @@ class HybridSearch:
             if doc_id not in combined_results:
                 combined_results[doc_id] = {
                     "title": result["title"],
-                    "description": result["document"],
+                    "document": result["document"],
                     "bm25_rank": None,
                     "semantic_rank": rank,
                     "rrf_score": rrf_score(rank, k),
@@ -122,7 +122,7 @@ class HybridSearch:
                 format_results(
                     doc_id=doc_id,
                     title=doc["title"],
-                    document=doc["description"],
+                    document=doc["document"],
                     score=doc["rrf_score"],
                     bm25_rank=doc["bm25_rank"],
                     semantic_rank=doc["semantic_rank"],

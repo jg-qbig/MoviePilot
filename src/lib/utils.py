@@ -2,9 +2,14 @@ import os
 import json
 from typing import Any
 
+from dotenv import load_dotenv
+from google import genai
+
+
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 CACHE_PATH = os.path.join(PROJECT_ROOT, "cache")
 MOVIES_PATH = os.path.join(PROJECT_ROOT, "data", "movies.json")
+TEST_PATH = os.path.join(PROJECT_ROOT, "data", "golden_dataset.json")
 STOPWORDS_PATH = os.path.join(PROJECT_ROOT, "data", "stopwords.txt")
 
 SEARCH_LIMIT = 5
@@ -18,18 +23,22 @@ MAX_SEMANTIC_CHUNK_SIZE = 4
 CHUNK_OVERLAP = 1
 
 HYBRID_ALPHA = 0.5
-SEARCH_LIMIT_MULTIPLIER = 5
 RRF_K = 60
+
+MAX_GEMINI_CHARS = 200
+SEARCH_LIMIT_MULTIPLIER = 5
 
 
 def load_movies() -> list[dict]:
-    with open(
-        MOVIES_PATH,
-        "r",
-        encoding="utf8",
-    ) as f:
+    with open(MOVIES_PATH, "r", encoding="utf8") as f:
         data = json.load(f)
     return data["movies"]
+
+
+def load_test_cases() -> list[dict]:
+    with open(TEST_PATH, "r", encoding="utf8") as f:
+        data = json.load(f)
+    return data["test_cases"]
 
 
 def load_stopwords() -> list[str]:
@@ -53,3 +62,18 @@ def format_results(
 def print_results(results: list[dict], score_label: str = "Score"):
     for result in results:
         print(f"({result["id"]}) {result["title"]} - {score_label}: {result["score"]}")
+
+
+def setup_gemini() -> genai.Client:
+    load_dotenv()
+    api_key = os.environ.get("GEMINI_API_KEY")
+    client = genai.Client(api_key=api_key)
+    return client
+
+
+def prompt_gemini(prompt: str) -> str:
+    client = setup_gemini()
+    response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+    if response.usage_metadata is not None:
+        print(f"Total tokens: {response.usage_metadata.total_token_count}")
+    return response.text or ""

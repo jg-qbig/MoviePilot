@@ -1,8 +1,16 @@
 import argparse
 
-from src.lib.utils import HYBRID_ALPHA, RRF_K, SEARCH_LIMIT, load_movies, print_results
+from src.lib.utils import (
+    HYBRID_ALPHA,
+    RRF_K,
+    SEARCH_LIMIT,
+    SEARCH_LIMIT_MULTIPLIER,
+    load_movies,
+    print_results,
+)
 from src.lib.hybrid_search import min_max_normalize, HybridSearch
-from src.lib.query_enhancement import enhance_query, rerank_results, llm_evaluation
+from src.lib.query_enhancement import enhance_query
+from src.lib.result_reranking import rerank_results
 
 
 def main(args_list=None) -> None:
@@ -78,13 +86,9 @@ def main(args_list=None) -> None:
 
     match args.command:
         case "rrf-search":
-            data = load_movies()
-            index = HybridSearch(data)
-            results = index.rrf_search(args.query, args.k, args.limit)
-            print_results(results, score_label="RRF Score")
-            # rrf_search_command(
-            #    args.query, args.enhance, args.rerank_method, args.k, args.limit
-            # )
+            rrf_search_command(
+                args.query, args.k, args.limit, args.enhance, args.rerank
+            )
             # if args.evaluate:
             #    llm_evaluation(args.query, results)
         case "weighted-search":
@@ -100,36 +104,25 @@ def main(args_list=None) -> None:
 
 def rrf_search_command(
     query: str,
-    enhance: str = "",
-    rerank_method: str = "",
     k: int = RRF_K,
     limit: int = SEARCH_LIMIT,
-    verbose: bool = False,
+    enhance: str = "",
+    rerank: str = "",
 ):
-    # log = ""
-    # print(f"Reciprocal Rank Fusion Results for '{query}' (k={k}):")
-    # log += f"LOG: Original query: {query}\n"
-
-    # query = enhance_query(query, method=enhance)
-    # log += f"LOG: Original query: {query}\n"
+    enhanced_query = enhance_query(query, method=enhance)
 
     data = load_movies()
     index = HybridSearch(data)
 
-    results = index.rrf_search(query, k, limit * 5)
+    if rerank:
+        results = index.rrf_search(enhanced_query, k, limit * SEARCH_LIMIT_MULTIPLIER)
+    else:
+        results = index.rrf_search(enhanced_query, k, limit)
+
+    results = rerank_results(query, results, method=rerank, limit=limit)
+
     print_results(results)
-    # for r in results:
-    #    log += f"LOG: RRF Results: {r["title"]} ({r["rrf_score"]})\n"
-
-    # print(f"Reranking top {limit} results using {rerank_method} method...")
-    # results = rerank_results(query, results, method=rerank_method, limit=limit)
-    # for r in results:
-    #    log += f"LOG: Reranked Results: {r["title"]} ({r["rrf_score"]})\n"
-
-    # if verbose:
-    #    print(log)
-
-    # return results
+    return results
 
 
 if __name__ == "__main__":

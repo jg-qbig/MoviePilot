@@ -106,7 +106,7 @@ class ChunkedSemanticSearch(SemanticSearch):
         chunks_meta = []
         for doc_idx, doc in enumerate(documents):
             # content = f"{doc['title']}. {doc['description']}"
-            content = doc.get("description", "")
+            content = doc["description"]
             if not content.strip():
                 continue
 

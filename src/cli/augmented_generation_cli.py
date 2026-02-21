@@ -1,6 +1,6 @@
 import argparse
 
-from src.cli.hybrid_search_cli import rrf_search_command
+from src.cli.hybrid_search import rrf_search_command
 from src.lib.augmented_generation import (
     augment_prompt,
     summarize,

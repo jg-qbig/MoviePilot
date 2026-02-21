@@ -142,7 +142,9 @@ def search_chunked_command(query: str, limit: int = SEARCH_LIMIT):
     index = ChunkedSemanticSearch()
     data = load_movies()
     index.load_or_create_chunk_embeddings(data)
-    print_results(index.search_chunks(query, limit), score_label="Cosine Similarity")
+    results = index.search_chunks(query, limit)
+    print_results(results, score_label="Cosine Similarity")
+    return results
 
 
 def build_chunk_embeddings_command():

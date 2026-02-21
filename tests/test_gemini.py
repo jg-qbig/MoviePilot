@@ -9,7 +9,7 @@ print(f"Using key {api_key[:6]}...")
 
 client = genai.Client(api_key=api_key)
 response = client.models.generate_content(
-    model="gemini-2.5-flash", contents="Why is the sky blue?"
+    model="gemini-2.5-flash", contents="Hello World!"
 )
 
 print(f"Response: {response.text}")
