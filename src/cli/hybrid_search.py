@@ -89,8 +89,6 @@ def main(args_list=None) -> None:
             rrf_search_command(
                 args.query, args.k, args.limit, args.enhance, args.rerank
             )
-            # if args.evaluate:
-            #    llm_evaluation(args.query, results)
         case "weighted-search":
             data = load_movies()
             index = HybridSearch(data)
@@ -121,7 +119,7 @@ def rrf_search_command(
 
     results = rerank_results(query, results, method=rerank, limit=limit)
 
-    print_results(results)
+    print_results(results, score_label="RRF Score")
     return results
 
 

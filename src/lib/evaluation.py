@@ -2,7 +2,7 @@ import re
 import json
 
 from src.lib.utils import (
-    MAX_GEMINI_CHARS,
+    MAX_DESCRIPTION,
     SEARCH_LIMIT,
     load_test_cases,
     prompt_gemini,
@@ -16,9 +16,12 @@ from src.cli.hybrid_search import rrf_search_command
 def evaluate(search_method: str, limit: int = SEARCH_LIMIT, use_llm: bool = False):
     test_data = load_test_cases()
 
+    total_precision = 0
+    total_recall = 0
     total_f1 = 0
     for test in test_data:
         print(f"{"-" * 50}")
+        print("### Search Results ###")
         if search_method == "keyword":
             index = InvertedIndex()
             index.load()
@@ -45,14 +48,18 @@ def evaluate(search_method: str, limit: int = SEARCH_LIMIT, use_llm: bool = Fals
             else 0.0
         )
 
+        total_precision += precision_k
+        total_recall += recall_k
         total_f1 += f1
 
-        print("\n### Metrics ###")
+        print("\n### Evaluation Metrics ###")
         print(
             f"Query: {test["query"]}\nRelevant: {test["relevant_docs"]}\nPrecision@{limit}: {precision_k:.3f}\nRecall@{limit}: {recall_k:.3f}\nF1@{limit}: {f1:.3f}"
         )
         print(f"{"-" * 50}")
 
+    print(f"Average Precision@{limit}: {total_precision/len(test_data):.3f}")
+    print(f"Average Recall@{limit}: {total_recall/len(test_data):.3f}")
     print(f"Average F1@{limit}: {total_f1/len(test_data):.3f}")
     print(f"{"-" * 50}")
 
@@ -68,9 +75,12 @@ def recall(results: list[str], targets: list[str]) -> float:
 
 
 def llm_eval(query: str, results: list[dict]):
-    results_str = ""
-    for i, res in enumerate(results, 1):
-        results_str += f"{i}. {res["title"]} - {res["document"][:MAX_GEMINI_CHARS]}"
+    results_str = "\n".join(
+        [
+            f"{i}. {res["title"]} - {res["document"][:MAX_DESCRIPTION]}"
+            for i, res in enumerate(results)
+        ]
+    )
 
     prompt = f"""
     You are an experienced movie expert and are especially skilled at recommending movies to people based on a given query.

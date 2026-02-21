@@ -1,74 +1,75 @@
-from src.lib.query_enhancement import prompt_gemini
+from src.lib.utils import prompt_gemini, results_to_str
 
 
-def augment_prompt(query: str, docs: list):
-    prompt = f"""Answer the question or provide information based on the provided documents. This should be tailored to Hoopla users. Hoopla is a movie streaming service.
-
-    Query: {query}
-
-    Documents:
-    {docs}
-
-    Provide a comprehensive answer that addresses the query:"""
-
-    return prompt_gemini(prompt)
-
-
-def summarize(query: str, results: list):
+def generate(question: str, results: list[dict]) -> str:
     prompt = f"""
-    Provide information useful to this query by synthesizing information from multiple search results in detail.
-    The goal is to provide comprehensive information so that users know what their options are.
-    Your response should be information-dense and concise, with several key pieces of information about the genre, plot, etc. of each movie.
-    This should be tailored to Hoopla users. Hoopla is a movie streaming service.
-    Query: {query}
-    Search Results:
-    {results}
-    Provide a comprehensive 3–4 sentence answer that combines information from multiple sources:
+    Answer the question below based on the provided movie descriptions.
+
+    Question: {question}
+
+    Descriptions: {results_to_str(results)}
+
+    Answer:
     """
 
     return prompt_gemini(prompt)
 
 
-def summarize_with_citations(query: str, results: list):
-    prompt = f"""Answer the question or provide information based on the provided documents.
-
-    This should be tailored to Hoopla users. Hoopla is a movie streaming service.
-
-    If not enough information is available to give a good answer, say so but give as good of an answer as you can while citing the sources you have.
-
-    Query: {query}
-
-    Documents:
-    {results}
-
-    Instructions:
-    - Provide a comprehensive answer that addresses the query
-    - Cite sources using [1], [2], etc. format when referencing information
-    - If sources disagree, mention the different viewpoints
-    - If the answer isn't in the documents, say "I don't have enough information"
-    - Be direct and informative
-
-    Answer:"""
-
-    return prompt_gemini(prompt)
-
-
-def question_answering(question: str, results: list):
-    prompt = f"""Answer the user's question based on the provided movies that are available on Hoopla.
-
-    This should be tailored to Hoopla users. Hoopla is a movie streaming service.
+def summarize(question: str, results: list[dict]) -> str:
+    prompt = f"""
+    You will be provided with a list movies and their descriptions as context.
+    Answer the question below by generating a concise and coherent summary from the given Context.
+    Condense the context into a well-written summary that captures the main ideas, key points, and insights presented in the context.
+    Prioritize clarity and brevity while retaining the essential information.
+    Aim to convey the context's core message and any supporting details that contribute to a comprehensive understanding.
+    Craft the summary to be self-contained, ensuring that readers can grasp the content even if they haven't read the context.
+    Provide context where necessary and avoid excessive technical jargon or verbosity.
+    The goal is to create a summary that effectively communicates the context's content while being easily digestible and engaging.
+    Provide a comprehensive answer in a single paragraph.
 
     Question: {question}
 
-    Documents:
-    {results}
+    Context: {results_to_str(results)}
 
-    Instructions:
-    - Answer questions directly and concisely
-    - Be casual and conversational
-    - Don't be cringe or hype-y
-    - Talk like a normal person would in a chat conversation
+    Summary:
+    """
+    return prompt_gemini(prompt)
 
-    Answer:"""
 
+def summarize_with_citations(question: str, results: list[dict]) -> str:
+    prompt = f"""
+    You will be provided with a list movies and their descriptions as context.
+    Answer the question below by generating a concise and coherent summary from the given Context.
+    Condense the context into a well-written summary that captures the main ideas, key points, and insights presented in the context.
+    Prioritize clarity and brevity while retaining the essential information.
+    Aim to convey the context's core message and any supporting details that contribute to a comprehensive understanding.
+    Craft the summary to be self-contained, ensuring that readers can grasp the content even if they haven't read the context.
+    Provide context where necessary and avoid excessive technical jargon or verbosity.
+    The goal is to create a summary that effectively communicates the context's content while being easily digestible and engaging.
+    To complete your summary you must cite all information extracted from the movie descriptions by referencing the number in front of each movie title.
+
+    Question: {question}
+
+    Context: {results_to_str(results)}
+
+    Answer:
+    """
+    print(prompt)
+    return prompt_gemini(prompt)
+
+
+def question_answering(question: str, results: list[dict]) -> str:
+    prompt = f"""
+    You are an assistant for question-answering tasks. Use the following descriptions of retrieved movies to answer the question. 
+
+    If the context provides information to answer the question, respond with a concise answer in three sentences maximum using that information.
+
+    If the context does not provide information, simply say that you don't know.
+
+    Question: {question}
+
+    Context: {results_to_str(results)}
+
+    Answer:
+    """
     return prompt_gemini(prompt)

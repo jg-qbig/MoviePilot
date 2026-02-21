@@ -25,7 +25,7 @@ CHUNK_OVERLAP = 1
 HYBRID_ALPHA = 0.5
 RRF_K = 60
 
-MAX_GEMINI_CHARS = 200
+MAX_DESCRIPTION = 200
 SEARCH_LIMIT_MULTIPLIER = 5
 
 
@@ -71,9 +71,19 @@ def setup_gemini() -> genai.Client:
     return client
 
 
-def prompt_gemini(prompt: str) -> str:
+def prompt_gemini(prompt: str | list) -> str:
     client = setup_gemini()
     response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
     if response.usage_metadata is not None:
         print(f"Total tokens: {response.usage_metadata.total_token_count}")
     return response.text or ""
+
+
+def results_to_str(results: list[dict]) -> str:
+    results_str = "\n".join(
+        [
+            f"({res["id"]}) {res["title"]} - {res["document"][:MAX_DESCRIPTION]}"
+            for res in results
+        ]
+    )
+    return results_str

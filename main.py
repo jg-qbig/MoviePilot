@@ -5,8 +5,8 @@ from src.cli import (
     keyword_search,
     semantic_search,
     hybrid_search,
-    multimodal_search_cli,
-    augmented_generation_cli,
+    augmented_generation,
+    multimodal_search,
     evaluation,
 )
 
@@ -42,8 +42,8 @@ def main():
         "keyword": keyword_search.main,
         "semantic": semantic_search.main,
         "hybrid": hybrid_search.main,
-        "multimodal": multimodal_search_cli.main,
-        "rag": augmented_generation_cli.main,
+        "rag": augmented_generation.main,
+        "multimodal": multimodal_search.main,
         "evaluate": evaluation.main,
     }
 

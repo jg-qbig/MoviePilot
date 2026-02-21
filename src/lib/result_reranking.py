@@ -4,7 +4,7 @@ import time
 
 from sentence_transformers import CrossEncoder
 
-from src.lib.utils import MAX_GEMINI_CHARS, SEARCH_LIMIT, prompt_gemini
+from src.lib.utils import MAX_DESCRIPTION, SEARCH_LIMIT, prompt_gemini
 
 
 def rate_individual(query: str, results: list[dict]) -> list[dict]:
@@ -14,7 +14,7 @@ def rate_individual(query: str, results: list[dict]) -> list[dict]:
 
         Query: "{query}"
 
-        Movie: {result["title"]} - {result["document"][:MAX_GEMINI_CHARS]}
+        Movie: {result["title"]} - {result["document"][:MAX_DESCRIPTION]}
 
         Consider:
         - Direct relevance to query
@@ -48,7 +48,7 @@ def rate_batch(query: str, results: list[dict]) -> list:
 
     Query: "{query}"
 
-    Movies: {[f"{result["id"]}, {result["title"]}, {result["document"][:MAX_GEMINI_CHARS]}" for result in results]}
+    Movies: {[f"{result["id"]}, {result["title"]}, {result["document"][:MAX_DESCRIPTION]}" for result in results]}
 
     Return ONLY the IDs in order of relevance, starting with the best match. Return a valid JSON list, nothing else. For example:
 
