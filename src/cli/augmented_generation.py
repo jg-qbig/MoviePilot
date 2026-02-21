@@ -10,21 +10,26 @@ from src.lib.augmented_generation import (
 )
 
 
-def main(args_list=None) -> None:
-    parser = argparse.ArgumentParser(description="Retrieval Augmented Generation CLI")
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+def setup_subparser(subparser: argparse._SubParsersAction) -> None:
+    rag_parser = subparser.add_parser("rag", help="Retrieval Augmented Generation CLI")
+    rag_subparser = rag_parser.add_subparsers(
+        dest="command", help="Available commands", required=False
+    )
 
     ### QA
-    qa_parser = subparsers.add_parser(
+    qa_parser = rag_subparser.add_parser(
         "qa", help="Answer user question based on retrieved search results."
     )
     qa_parser.add_argument("question", type=str, help="Question to be answered.")
     qa_parser.add_argument(
-        "--limit", type=int, default=5, help="Number of search results to be retrieved."
+        "--limit",
+        type=int,
+        default=SEARCH_LIMIT,
+        help="Number of search results to be retrieved.",
     )
 
     ### Summarize with citations
-    citation_parser = subparsers.add_parser(
+    citation_parser = rag_subparser.add_parser(
         "cite", help="Generate LLM summary with citations"
     )
     citation_parser.add_argument("query", type=str, help="Search query.")
@@ -36,7 +41,7 @@ def main(args_list=None) -> None:
     )
 
     ### Summarization
-    summarize_parser = subparsers.add_parser(
+    summarize_parser = rag_subparser.add_parser(
         "summarize", help="Generate an LLM summary of the retrieved search results."
     )
     summarize_parser.add_argument("query", type=str, help="Search query.")
@@ -48,16 +53,15 @@ def main(args_list=None) -> None:
     )
 
     ### Generate based on search results
-    rag_parser = subparsers.add_parser(
+    gen_parser = rag_subparser.add_parser(
         "generate", help="Generate LLM response based on retrieved search results."
     )
-    rag_parser.add_argument("query", type=str, help="Search query.")
+    gen_parser.add_argument("query", type=str, help="Search query.")
 
-    if args_list is None:
-        args = parser.parse_args()
-    else:
-        args = parser.parse_args(args_list)
+    rag_parser.set_defaults(func=execute, subparser=rag_parser)
 
+
+def execute(args: argparse.Namespace) -> None:
     match args.command:
         case "qa":
             results = rrf_search_command(args.question, limit=args.limit)
@@ -76,8 +80,4 @@ def main(args_list=None) -> None:
             response = generate(args.query, results)
             print(f"LLM Response:\n{response}")
         case _:
-            parser.print_help()
-
-
-if __name__ == "__main__":
-    main()
+            args.subparser.print_help()

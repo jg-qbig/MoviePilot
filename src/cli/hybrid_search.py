@@ -13,12 +13,14 @@ from src.lib.query_enhancement import enhance_query
 from src.lib.result_reranking import rerank_results
 
 
-def main(args_list=None) -> None:
-    parser = argparse.ArgumentParser(description="Hybrid Search CLI")
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+def setup_subparser(subparser: argparse._SubParsersAction) -> None:
+    hybrid_parser = subparser.add_parser("hybrid", help="Hybrid Search CLI")
+    hybrid_subparser = hybrid_parser.add_subparsers(
+        dest="command", help="Available commands"
+    )
 
     ### Hybrid search using reciprocal rank fusion to combine keyword and semantic search results
-    rrf_search_parser = subparsers.add_parser(
+    rrf_search_parser = hybrid_subparser.add_parser(
         "rrf-search",
         help="Search using reciprocal rank fusion to combine keyword and semantic search results.",
     )
@@ -52,7 +54,7 @@ def main(args_list=None) -> None:
     )
 
     ### Hybrid search using min/max normalization and weighting to combine keyword and semantic search results
-    weighted_search_parser = subparsers.add_parser(
+    weighted_search_parser = hybrid_subparser.add_parser(
         "weighted-search",
         help="Search using weighted results from keyword and semantic search.",
     )
@@ -71,7 +73,7 @@ def main(args_list=None) -> None:
     )
 
     ### Min/max normalization
-    normalize_parser = subparsers.add_parser(
+    normalize_parser = hybrid_subparser.add_parser(
         "normalize",
         help="Normalize a given array of values using Min/Max normalization.",
     )
@@ -79,11 +81,10 @@ def main(args_list=None) -> None:
         "array", nargs="+", type=float, help="Array to normalize."
     )
 
-    if args_list is None:
-        args = parser.parse_args()
-    else:
-        args = parser.parse_args(args_list)
+    hybrid_parser.set_defaults(func=execute, subparser=hybrid_parser)
 
+
+def execute(args: argparse.Namespace) -> None:
     match args.command:
         case "rrf-search":
             rrf_search_command(
@@ -97,7 +98,7 @@ def main(args_list=None) -> None:
         case "normalize":
             print(min_max_normalize(args.array))
         case _:
-            parser.print_help()
+            args.subparser.print_help()
 
 
 def rrf_search_command(
@@ -121,7 +122,3 @@ def rrf_search_command(
 
     print_results(results, score_label="RRF Score")
     return results
-
-
-if __name__ == "__main__":
-    main()

@@ -4,33 +4,28 @@ from src.lib.utils import SEARCH_LIMIT
 from src.lib.evaluation import evaluate
 
 
-def main(args_list=None) -> None:
-    parser = argparse.ArgumentParser(description="Search Evaluation CLI")
-    parser.add_argument(
+def setup_subparser(subparser: argparse._SubParsersAction) -> None:
+    eval_parser = subparser.add_parser("evaluate", help="Search Evaluation CLI")
+    eval_parser.add_argument(
         "search_method",
         type=str,
         choices=["keyword", "semantic", "hybrid"],
         help="Which search method to evaluate",
     )
-    parser.add_argument(
+    eval_parser.add_argument(
         "--limit",
         type=int,
         default=SEARCH_LIMIT,
         help="Number of results to evaluate (k for precision@k, recall@k)",
     )
-    parser.add_argument(
+    eval_parser.add_argument(
         "--llm",
         action="store_true",
         help="Use llm expert to evaluate search results.",
     )
 
-    if args_list is None:
-        args = parser.parse_args()
-    else:
-        args = parser.parse_args(args_list)
+    eval_parser.set_defaults(func=execute, subparser=eval_parser)
 
+
+def execute(args: argparse.Namespace) -> None:
     evaluate(args.search_method, args.limit, args.llm)
-
-
-if __name__ == "__main__":
-    main()

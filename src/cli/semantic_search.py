@@ -16,12 +16,14 @@ from src.lib.utils import (
 )
 
 
-def main(args_list=None) -> None:
-    parser = argparse.ArgumentParser(description="Semantic Search CLI")
-    subparsers = parser.add_subparsers(dest="command")
+def setup_subparser(subparser: argparse._SubParsersAction) -> None:
+    semantic_parser = subparser.add_parser("semantic", help="Semantic Search CLI")
+    semantic_subparser = semantic_parser.add_subparsers(
+        dest="command", help="Available Commands"
+    )
 
     ### Semantic search based on semantically chunked embeddings
-    search_chunked_parser = subparsers.add_parser(
+    search_chunked_parser = semantic_subparser.add_parser(
         "search_chunked",
         help="Semantic search based on semantically chunked embeddings.",
     )
@@ -34,13 +36,13 @@ def main(args_list=None) -> None:
     )
 
     ### Build semantically chunked embeddings
-    subparsers.add_parser(
+    semantic_subparser.add_parser(
         "build_chunk_embeddings",
         help="Generate semantically chunked embeddings and store them on disk.",
     )
 
     ### Create semantic chunks
-    chunk_semantic_parser = subparsers.add_parser(
+    chunk_semantic_parser = semantic_subparser.add_parser(
         "chunk_semantic", help="Create semantic chunks from a single input text."
     )
     chunk_semantic_parser.add_argument("text", type=str, help="Text to chunk.")
@@ -58,7 +60,9 @@ def main(args_list=None) -> None:
     )
 
     ### Create simple chunks
-    chunk_parser = subparsers.add_parser("chunk", help="Split text into simple chunks.")
+    chunk_parser = semantic_subparser.add_parser(
+        "chunk", help="Split text into simple chunks."
+    )
     chunk_parser.add_argument("text", type=str, help="Text to chunk.")
     chunk_parser.add_argument(
         "--max-chunk-size",
@@ -74,7 +78,7 @@ def main(args_list=None) -> None:
     )
 
     ### Semantic search without chunks
-    search_parser = subparsers.add_parser(
+    search_parser = semantic_subparser.add_parser(
         "search", help="Search movies using semantic search and single embeddings."
     )
     search_parser.add_argument("query", type=str, help="Search query")
@@ -83,32 +87,31 @@ def main(args_list=None) -> None:
     )
 
     ### Embed movie descriptions
-    subparsers.add_parser(
+    semantic_subparser.add_parser(
         "build_embeddings",
         help="Generate single embeddings from movie descriptions and store them on disk.",
     )
 
     ### Verify embeddings
-    subparsers.add_parser(
+    semantic_subparser.add_parser(
         "verify_embeddings", help="Verify simple embeddings for the movie dataset."
     )
 
     ### Embed search query
-    embed_query_parser = subparsers.add_parser(
+    embed_query_parser = semantic_subparser.add_parser(
         "embed", help="Generate embedding for a single text input."
     )
     embed_query_parser.add_argument("text", type=str, help="Text to embed.")
 
     ### Verify embedding model
-    subparsers.add_parser(
+    semantic_subparser.add_parser(
         "verify_model", help="Check if embedding model is loaded correctly."
     )
 
-    if args_list is None:
-        args = parser.parse_args()
-    else:
-        args = parser.parse_args(args_list)
+    semantic_parser.set_defaults(func=execute, subparser=semantic_parser)
 
+
+def execute(args: argparse.Namespace) -> None:
     match args.command:
         case "search_chunked":
             search_chunked_command(args.query, args.limit)
@@ -135,7 +138,7 @@ def main(args_list=None) -> None:
         case "verify_model":
             verify_model_command()
         case _:
-            parser.print_help()
+            args.subparser.print_help()
 
 
 def search_chunked_command(query: str, limit: int = SEARCH_LIMIT):
@@ -190,7 +193,3 @@ def verify_model_command():
     index = SemanticSearch()
     print(f"Model loaded: {index.model}")
     print(f"Max sequence length: {index.model.max_seq_length}")
-
-
-if __name__ == "__main__":
-    main()

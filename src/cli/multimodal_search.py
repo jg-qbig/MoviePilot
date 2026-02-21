@@ -9,32 +9,37 @@ from src.lib.multimodal_search import (
 )
 
 
-def main(args_list=None):
-    parser = argparse.ArgumentParser(description="Retrieval Augmented Generation CLI")
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+def setup_subparser(subparser: argparse._SubParsersAction) -> None:
+    multimodal_parser = subparser.add_parser(
+        "multimodal", help="Multimodal (Image + Text) Search CLI"
+    )
+    multimodal_subparser = multimodal_parser.add_subparsers(
+        dest="command", help="Available commands"
+    )
 
     ### Image search
-    search_parser = subparsers.add_parser("search", help="Search movie based on image.")
+    search_parser = multimodal_subparser.add_parser(
+        "search", help="Search movie based on image."
+    )
     search_parser.add_argument("--path", type=str, help="Path to image.")
 
     ### Image description
-    describe_parser = subparsers.add_parser(
+    describe_parser = multimodal_subparser.add_parser(
         "augment", help="Let model describe image as text."
     )
     describe_parser.add_argument("--query", type=str, help="Search query.")
     describe_parser.add_argument("--path", type=str, help="Path to image.")
 
     ### Verify embeddings
-    verify_parser = subparsers.add_parser(
+    verify_parser = multimodal_subparser.add_parser(
         "verify", help="Check if image embeddings are valid."
     )
     verify_parser.add_argument("--path", type=str, help="Path to image.")
 
-    if args_list is None:
-        args = parser.parse_args()
-    else:
-        args = parser.parse_args(args_list)
+    multimodal_parser.set_defaults(func=execute, subparser=multimodal_parser)
 
+
+def execute(args: argparse.Namespace) -> None:
     match args.command:
         case "search":
             data = load_movies()
@@ -48,8 +53,4 @@ def main(args_list=None):
         case "verify":
             verify_image_embedding(args.path)
         case _:
-            parser.print_help()
-
-
-if __name__ == "__main__":
-    main()
+            args.subparser.print_help()

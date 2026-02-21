@@ -1,5 +1,4 @@
 import argparse
-import sys
 
 from src.cli import (
     keyword_search,
@@ -15,41 +14,19 @@ def main():
     parser = argparse.ArgumentParser(
         description="RAG Movie Search Engine CLI",
     )
-
     subparsers = parser.add_subparsers(dest="tool", help="Available tools")
 
-    subparsers.add_parser("keyword", help="Perform keyword-based search (BM25)")
-    subparsers.add_parser("semantic", help="Perform vector-based semantic search")
-    subparsers.add_parser(
-        "hybrid", help="Return combined keyword- and vector-based search results"
-    )
-    subparsers.add_parser(
-        "multimodal", help="Search based on a multimodal query (image + text)"
-    )
-    subparsers.add_parser(
-        "rag", help="Generate LLM response informed by search results"
-    )
-    subparsers.add_parser("evaluate", help="Simple evaluation of search results")
+    keyword_search.setup_subparser(subparsers)
+    semantic_search.setup_subparser(subparsers)
+    hybrid_search.setup_subparser(subparsers)
+    augmented_generation.setup_subparser(subparsers)
+    multimodal_search.setup_subparser(subparsers)
+    evaluation.setup_subparser(subparsers)
 
-    # Only parse first argument, rest is passed on to sub-script
-    tool_name = sys.argv[1:2]
-    sub_args = sys.argv[2:]
+    args = parser.parse_args()
 
-    args = parser.parse_args(tool_name)
-
-    # Map tool to sub-script
-    tool_map = {
-        "keyword": keyword_search.main,
-        "semantic": semantic_search.main,
-        "hybrid": hybrid_search.main,
-        "rag": augmented_generation.main,
-        "multimodal": multimodal_search.main,
-        "evaluate": evaluation.main,
-    }
-
-    if args.tool in tool_map:
-        # Call sub-script main function
-        tool_map[args.tool](sub_args)
+    if hasattr(args, "func"):
+        args.func(args)
     else:
         parser.print_help()
 

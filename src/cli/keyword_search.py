@@ -4,12 +4,14 @@ from src.lib.utils import SEARCH_LIMIT, BM25_K1, BM25_B, print_results
 from src.lib.keyword_search import match_tokens, InvertedIndex
 
 
-def main(args_list=None) -> None:
-    parser = argparse.ArgumentParser(description="Keyword Search CLI")
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+def setup_subparser(subparsers: argparse._SubParsersAction) -> None:
+    keyword_parser = subparsers.add_parser("keyword", help="Keyword Search CLI")
+    keyword_subparsers = keyword_parser.add_subparsers(
+        dest="command", help="Available Commands", required=False
+    )
 
     ### BM25 Keyword search
-    bm25search_parser = subparsers.add_parser(
+    bm25search_parser = keyword_subparsers.add_parser(
         "bm25search",
         help="Return the top n {--limit} matches for a query {query} according to Okapi BM25 search algorithm.",
     )
@@ -22,7 +24,7 @@ def main(args_list=None) -> None:
     )
 
     ### BM25 inverse document frequency
-    bm25idf_parser = subparsers.add_parser(
+    bm25idf_parser = keyword_subparsers.add_parser(
         "bm25idf",
         help="Return the IDF score of a word {term} using Okapi BM25 search algorithm.",
     )
@@ -31,7 +33,7 @@ def main(args_list=None) -> None:
     )
 
     ### BM25 term frequency
-    bm25tf_parser = subparsers.add_parser(
+    bm25tf_parser = keyword_subparsers.add_parser(
         "bm25tf",
         help="Return the TF score of a word {term} using Okapi BM25 search algorithm.",
     )
@@ -55,7 +57,7 @@ def main(args_list=None) -> None:
     )
 
     ### TF_IDF search
-    tfidf_search_parser = subparsers.add_parser(
+    tfidf_search_parser = keyword_subparsers.add_parser(
         "search",
         help="Return the top n {--limit} matches for a query {query} based on TF-IDF scores.",
     )
@@ -68,7 +70,7 @@ def main(args_list=None) -> None:
     )
 
     ### Term frequency - inverse document frequency score
-    tfidf_parser = subparsers.add_parser(
+    tfidf_parser = keyword_subparsers.add_parser(
         "tfidf",
         help="Return the TF-IDF score of a word {term}.",
     )
@@ -80,7 +82,7 @@ def main(args_list=None) -> None:
     )
 
     ### Inverse document frequency
-    idf_parser = subparsers.add_parser(
+    idf_parser = keyword_subparsers.add_parser(
         "idf",
         help="Return the inverse document frequency of a word {term}.",
     )
@@ -89,7 +91,7 @@ def main(args_list=None) -> None:
     )
 
     ### Term frequency
-    tf_parser = subparsers.add_parser(
+    tf_parser = keyword_subparsers.add_parser(
         "tf",
         help="Return the number of occurrences of a word {term} in a document {doc_id}",
     )
@@ -99,22 +101,20 @@ def main(args_list=None) -> None:
     tf_parser.add_argument("term", type=str, help="Search term (must be a single word)")
 
     ### Build inverted search index
-    subparsers.add_parser(
+    keyword_subparsers.add_parser(
         "build", help="Build the inverted search index and save it to disk"
     )
 
     ### Search with keyword matching
-    match_parser = subparsers.add_parser(
+    match_parser = keyword_subparsers.add_parser(
         "match", help="Search movies using keyword matching in title and description"
     )
     match_parser.add_argument("query", type=str, help="Search query")
 
-    ### Parse args
-    if args_list is None:
-        args = parser.parse_args()
-    else:
-        args = parser.parse_args(args_list)
+    keyword_parser.set_defaults(func=execute, subparser=keyword_parser)
 
+
+def execute(args: argparse.Namespace) -> None:
     match args.command:
         case "bm25search":
             index = InvertedIndex()
@@ -170,8 +170,4 @@ def main(args_list=None) -> None:
             for result in results:
                 print(f"({result["id"]}) {result["title"]}")
         case _:
-            parser.print_help()
-
-
-if __name__ == "__main__":
-    main()
+            args.subparser.print_help()
