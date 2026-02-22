@@ -94,19 +94,26 @@ class InvertedIndex:
         n_matches = len(self.get_documents(term))
         return math.log((n_total - n_matches + 0.5) / (n_matches + 0.5) + 1)
 
-    def bm25(self, doc_id: int, term: str | list[str]) -> float:
+    def bm25(
+        self, doc_id: int, term: str | list[str], k1: float = BM25_K1, b: float = BM25_B
+    ) -> float:
         tokens = self.__tokenize(term)
-        return self.get_bm25_tf(doc_id, tokens) * self.get_bm25_idf(tokens)
+        return self.get_bm25_tf(doc_id, tokens, k1=k1, b=b) * self.get_bm25_idf(tokens)
 
-    def search(self, query: str, limit: int = SEARCH_LIMIT, bm25: bool = False) -> list:
+    def search(
+        self, query: str, limit: int = SEARCH_LIMIT, bm25: bool = False, **kwargs
+    ) -> list:
         tokens = tokenize(query)
+
+        k1 = float(kwargs.get("k1", BM25_K1))
+        b = float(kwargs.get("b", BM25_B))
 
         scores = {}
         for doc_id in self.docmap:
             total_score = 0
             for tok in tokens:
                 if bm25:
-                    total_score += self.bm25(doc_id, [tok])
+                    total_score += self.bm25(doc_id, [tok], k1=k1, b=b)
                 else:
                     total_score += self.tfidf(doc_id, [tok])
             scores[doc_id] = total_score

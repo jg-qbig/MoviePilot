@@ -59,9 +59,26 @@ def format_results(
     }
 
 
-def print_results(results: list[dict], score_label: str = "Score"):
+def print_results(
+    results: list[dict], score_label: str = "Score", additional_keys: list = []
+):
     for result in results:
-        print(f"({result["id"]}) {result["title"]} - {score_label}: {result["score"]}")
+        base = f"({result["id"]}) {result["title"]} - {score_label}: {result["score"]}"
+        extras = ", ".join(
+            f"{key}: {result[key]}" for key in additional_keys if key in result
+        )
+
+        print(f"{base}, {extras}" if extras else base)
+
+
+def results_to_str(results: list[dict]) -> str:
+    results_str = "\n".join(
+        [
+            f"({res["id"]}) {res["title"]} - {res["document"][:MAX_DESCRIPTION]}"
+            for res in results
+        ]
+    )
+    return results_str
 
 
 def setup_gemini() -> genai.Client:
@@ -77,13 +94,3 @@ def prompt_gemini(prompt: str | list) -> str:
     if response.usage_metadata is not None:
         print(f"Total tokens: {response.usage_metadata.total_token_count}")
     return response.text or ""
-
-
-def results_to_str(results: list[dict]) -> str:
-    results_str = "\n".join(
-        [
-            f"({res["id"]}) {res["title"]} - {res["document"][:MAX_DESCRIPTION]}"
-            for res in results
-        ]
-    )
-    return results_str

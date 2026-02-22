@@ -23,9 +23,18 @@ def setup_subparser(subparser: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Use llm expert to evaluate search results.",
     )
+    eval_parser.add_argument(
+        "extra_args",
+        nargs=argparse.REMAINDER,
+        help="Extra keyword arguments to pass on to the selected search method.",
+    )
 
     eval_parser.set_defaults(func=execute, subparser=eval_parser)
 
 
-def execute(args: argparse.Namespace) -> None:
-    evaluate(args.search_method, args.limit, args.llm)
+def execute(args: argparse.Namespace, unknown_args: list) -> None:
+    extra_args = {
+        key.lstrip("-"): value
+        for key, value in zip(unknown_args[::2], unknown_args[1::2])
+    }
+    evaluate(args.search_method, args.limit, args.llm, **extra_args)

@@ -23,10 +23,10 @@ def main():
     multimodal_search.setup_subparser(subparsers)
     evaluation.setup_subparser(subparsers)
 
-    args = parser.parse_args()
+    args, unkown = parser.parse_known_args()
 
     if hasattr(args, "func"):
-        args.func(args)
+        args.func(args, unkown)
     else:
         parser.print_help()
 

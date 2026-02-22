@@ -105,14 +105,14 @@ class ChunkedSemanticSearch(SemanticSearch):
         chunks = []
         chunks_meta = []
         for doc_idx, doc in enumerate(documents):
-            # content = f"{doc['title']}. {doc['description']}"
-            content = doc["description"]
-            if not content.strip():
-                continue
-
             doc_chunks = chunk_semantic(
-                content, max_chunk_size=MAX_SEMANTIC_CHUNK_SIZE, overlap=CHUNK_OVERLAP
+                doc["description"],
+                max_chunk_size=MAX_SEMANTIC_CHUNK_SIZE,
+                overlap=CHUNK_OVERLAP,
             )
+            # Adding title introduces heavy bias
+            # doc_chunks.insert(0, doc["title"])
+
             for chunk_idx, chunk in enumerate(doc_chunks):
                 chunks.append(chunk)
                 chunks_meta.append(

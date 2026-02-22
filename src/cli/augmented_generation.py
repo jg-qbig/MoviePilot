@@ -61,7 +61,7 @@ def setup_subparser(subparser: argparse._SubParsersAction) -> None:
     rag_parser.set_defaults(func=execute, subparser=rag_parser)
 
 
-def execute(args: argparse.Namespace) -> None:
+def execute(args: argparse.Namespace, _: list) -> None:
     match args.command:
         case "qa":
             results = rrf_search_command(args.question, limit=args.limit)

@@ -49,9 +49,6 @@ def setup_subparser(subparser: argparse._SubParsersAction) -> None:
         choices=["individual", "batch", "cross_encoder"],
         help="LLM based method to rerank most relevant search results.",
     )
-    rrf_search_parser.add_argument(
-        "--evaluate", action="store_true", help="Use an LLM to evaluate search results."
-    )
 
     ### Hybrid search using min/max normalization and weighting to combine keyword and semantic search results
     weighted_search_parser = hybrid_subparser.add_parser(
@@ -84,7 +81,7 @@ def setup_subparser(subparser: argparse._SubParsersAction) -> None:
     hybrid_parser.set_defaults(func=execute, subparser=hybrid_parser)
 
 
-def execute(args: argparse.Namespace) -> None:
+def execute(args: argparse.Namespace, _: list) -> None:
     match args.command:
         case "rrf-search":
             rrf_search_command(

@@ -7,7 +7,7 @@ from src.lib.keyword_search import match_tokens, InvertedIndex
 def setup_subparser(subparsers: argparse._SubParsersAction) -> None:
     keyword_parser = subparsers.add_parser("keyword", help="Keyword Search CLI")
     keyword_subparsers = keyword_parser.add_subparsers(
-        dest="command", help="Available Commands", required=False
+        dest="command", help="Available commands", required=False
     )
 
     ### BM25 Keyword search
@@ -56,7 +56,7 @@ def setup_subparser(subparsers: argparse._SubParsersAction) -> None:
         help="Parameter to control document length normalization (0 <= b <= 1). Helps to account for longer documents having higher term-frequency score due to simply containing more words.",
     )
 
-    ### TF_IDF search
+    ### TF-IDF search
     tfidf_search_parser = keyword_subparsers.add_parser(
         "search",
         help="Return the top n {--limit} matches for a query {query} based on TF-IDF scores.",
@@ -114,7 +114,7 @@ def setup_subparser(subparsers: argparse._SubParsersAction) -> None:
     keyword_parser.set_defaults(func=execute, subparser=keyword_parser)
 
 
-def execute(args: argparse.Namespace) -> None:
+def execute(args: argparse.Namespace, _: list) -> None:
     match args.command:
         case "bm25search":
             index = InvertedIndex()

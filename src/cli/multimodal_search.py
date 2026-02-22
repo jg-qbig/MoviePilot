@@ -39,7 +39,7 @@ def setup_subparser(subparser: argparse._SubParsersAction) -> None:
     multimodal_parser.set_defaults(func=execute, subparser=multimodal_parser)
 
 
-def execute(args: argparse.Namespace) -> None:
+def execute(args: argparse.Namespace, _: list) -> None:
     match args.command:
         case "search":
             data = load_movies()

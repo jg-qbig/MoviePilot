@@ -3,6 +3,7 @@ import json
 
 from src.lib.utils import (
     MAX_DESCRIPTION,
+    RRF_K,
     SEARCH_LIMIT,
     load_test_cases,
     prompt_gemini,
@@ -13,7 +14,9 @@ from src.cli.semantic_search import search_chunked_command
 from src.cli.hybrid_search import rrf_search_command
 
 
-def evaluate(search_method: str, limit: int = SEARCH_LIMIT, use_llm: bool = False):
+def evaluate(
+    search_method: str, limit: int = SEARCH_LIMIT, use_llm: bool = False, **kwargs
+):
     test_data = load_test_cases()
 
     total_precision = 0
@@ -25,12 +28,17 @@ def evaluate(search_method: str, limit: int = SEARCH_LIMIT, use_llm: bool = Fals
         if search_method == "keyword":
             index = InvertedIndex()
             index.load()
-            results = index.search(test["query"], limit=limit, bm25=True)
+            results = index.search(test["query"], limit=limit, bm25=True, **kwargs)
             print_results(results, score_label="BM25 Score")
         elif search_method == "semantic":
             results = search_chunked_command(test["query"], limit=limit)
         elif search_method == "hybrid":
-            results = rrf_search_command(test["query"], limit=limit)
+            k = int(kwargs.get("k", RRF_K))
+            enhance = str(kwargs.get("enhance", ""))
+            rerank = str(kwargs.get("rerank", ""))
+            results = rrf_search_command(
+                test["query"], limit=limit, k=k, enhance=enhance, rerank=rerank
+            )
         else:
             raise ValueError("No valid search method.")
 

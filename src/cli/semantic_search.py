@@ -19,7 +19,7 @@ from src.lib.utils import (
 def setup_subparser(subparser: argparse._SubParsersAction) -> None:
     semantic_parser = subparser.add_parser("semantic", help="Semantic Search CLI")
     semantic_subparser = semantic_parser.add_subparsers(
-        dest="command", help="Available Commands"
+        dest="command", help="Available commands"
     )
 
     ### Semantic search based on semantically chunked embeddings
@@ -111,7 +111,7 @@ def setup_subparser(subparser: argparse._SubParsersAction) -> None:
     semantic_parser.set_defaults(func=execute, subparser=semantic_parser)
 
 
-def execute(args: argparse.Namespace) -> None:
+def execute(args: argparse.Namespace, _: list) -> None:
     match args.command:
         case "search_chunked":
             search_chunked_command(args.query, args.limit)
