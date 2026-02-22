@@ -10,20 +10,16 @@ from src.lib.utils import MAX_DESCRIPTION, SEARCH_LIMIT, print_results, prompt_g
 def rate_individual(query: str, results: list[dict]) -> list[dict]:
     for result in results:
         prompt = f"""
-        Rate how well this movie matches the search query out of 10.
+        Given a user search query and a movie result.
+        Rate how well the returned movie matches the search query out of 10.
+        Consider direct relevance to the query, the users intent and appropriateness.
 
         Query: "{query}"
 
         Movie: {result["title"]} - {result["document"][:MAX_DESCRIPTION]}
 
-        Consider:
-        - Direct relevance to query
-        - User intent (what they're looking for)
-        - Content appropriateness
-
-        Keep in mind:
-        - Rate movies from 0 to 10 where 10 = perfect match
-        - follow the format: "Rating: {{rating}}/10"
+        Rate movies from 0 to 10 where 10 equals a perfect match.
+        Follow this format: "Rating: {{rating}}/10"
         """
 
         response = prompt_gemini(prompt)
@@ -44,7 +40,9 @@ def rate_individual(query: str, results: list[dict]) -> list[dict]:
 def rate_batch(query: str, results: list[dict]) -> list:
     docmap = {doc["id"]: doc for doc in results}
 
-    prompt = f"""Rank these movies by relevance to the search query.
+    prompt = f"""
+    Given a search query and a list of matched movies with their descriptions, rank the movies by relevance to the search query.
+    Consider direct relevance to the query, the users intent and appropriateness.
 
     Query: "{query}"
 
@@ -54,7 +52,9 @@ def rate_batch(query: str, results: list[dict]) -> list:
 
     [75, 12, 34, 2, 1]
 
-    Your response should start with '[' and end with ']'. No other information besides the JSON list should be sent.
+    Your response should start with '[' and end with ']'. Provide no other information besides the JSON list.
+
+    Ranking:
     """
 
     response = prompt_gemini(prompt)

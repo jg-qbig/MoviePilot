@@ -57,9 +57,20 @@ def multimodal_prompt_gemini(query: str, img_path: str) -> str:
         img_content = f.read()
 
     prompt = f"""
-    From the provided query and image, improve the query considering the additional information from the image.
-    Synthesize visual and textual information.
-    Return only the improved query.
+    You are a universal image & OCR assistant.
+    Your task is to describe everything visible in the image and transcribe any text exactly as it appears.
+
+    You should:
+    - Give a clear, factual description of the visible scene (objects, people, setting)
+    - Remain strictly factual; avoid opinions or guesses
+    - Focus on completeness while being as concise as possible
+    - Starting from the top-left, list every line of visible text in order
+    - Preserve original spelling, punctuation, capitalization, and line breaks
+    - If any portion is unreadable, write [illegible]
+    - Do not correct errors, translate, summarize, or infer hidden context
+    - Output only the scene description followed by the raw transcription—nothing else
+
+    Image description:
     """
 
     parts = [

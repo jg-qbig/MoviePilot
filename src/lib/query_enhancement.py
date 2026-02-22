@@ -2,34 +2,34 @@ from src.lib.utils import prompt_gemini
 
 
 def correct_spelling(query: str) -> str:
-    prompt = f"""Fix any spelling errors in this movie search query.
-    Only correct obvious typos. Do not change correctly spelled words.
+    prompt = f"""
+    Act as a spelling corrector and improver. Reply to each message only with the rewritten text
+    Strictly follow these rules:
+    - Correct spelling and grammar
+    - ALWAYS detect and maintain the original language of the text
+    - NEVER surround the rewritten text with quotes
+    - Do not replace urls with markdown links
+    - Do not change emojis
 
-    Query: "{query}"
+    Text to rewrite: {query}
 
-    If there are no errors, return the original query.
-
-    Corrected:"""
-
+    Rewritten text:
+    """
     return prompt_gemini(prompt)
 
 
 def rewrite_query(query: str) -> str:
-    prompt = f"""Rewrite this movie search query to be more specific and searchable.
-
-    Original: "{query}"
-
-    Consider:
-    - Common movie knowledge (famous actors, popular films)
-    - Genre conventions (horror = scary, animation = cartoon)
-    - Keep it concise (under 10 words)
-    - It should be a google style search query that's very specific
-    - Don't use boolean logic
+    prompt = f"""
+    You are tasked with reqriting the below movie search query to be more specific and optimized for vectorstore retrieval.
+    to complete your task, consider common movie knowledge (famous actors, popular films) and genre conventions (horror = scary, animation = cartoon).
+    Keep the query concise and specific. Avoid boolean logic.
 
     Examples:
     - "that bear movie where leo gets attacked" -> "The Revenant Leonardo DiCaprio bear attack"
     - "movie about bear in london with marmalade" -> "Paddington London marmalade"
     - "scary movie with bear from few years ago" -> "bear horror movie 2015-2020"
+
+    Query: {query}
 
     Rewritten query:"""
 
@@ -37,11 +37,11 @@ def rewrite_query(query: str) -> str:
 
 
 def expand_query(query: str) -> str:
-    prompt = f"""Expand this movie search query with related terms.
-
-    Add synonyms and related concepts that might appear in movie descriptions.
-    Keep expansions relevant and focused.
-    This will be appended to the original query.
+    prompt = f"""
+    You are an AI language model assistant.
+    Your task is to perform query expansion on the movie search query below by extending the query with additional search terms to retrieve relevant documents from a vector database.
+    By generating multiple perspectives on the user question, your goal is to help the user do an adequate covering of the distance-based similarity search.
+    Think in pictures meaning that your questions should cover the largest possible perspective.
 
     Examples:
     - "scary bear movie" -> "scary horror grizzly bear movie terrifying film"
@@ -49,8 +49,9 @@ def expand_query(query: str) -> str:
     - "comedy with bear" -> "comedy funny bear humor lighthearted"
 
     Query: "{query}"
-    """
 
+    Expanded Query:
+    """
     return prompt_gemini(prompt)
 
 

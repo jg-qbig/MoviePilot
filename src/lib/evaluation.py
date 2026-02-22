@@ -92,7 +92,7 @@ def llm_eval(query: str, results: list[dict]):
 
     prompt = f"""
     You are an experienced movie expert and are especially skilled at recommending movies to people based on a given query.
-    For the movies given below, sate how relevant each movie is to the search query on a scale from 1 to 5 where 1 equals not relevant at all and 5 equals highly relevant:
+    For the movies below, sate how relevant each movie is to the search query on a scale from 1 to 5 where 1 equals not relevant at all and 5 equals highly relevant:
 
     Query: "{query}"
 
@@ -105,11 +105,12 @@ def llm_eval(query: str, results: list[dict]):
     - 2: Not relevant
     - 1: Not relevant at all
 
-    Do NOT return any other numbers besides 1, 2, 3, 4 and 5.
+    Only return the scores in the same order you were given the movies. Return a valid JSON list, nothing else.
 
-    Return ONLY the scores in the same order you were given the documents. Return a valid JSON list, nothing else. For example:
-
+    For example:
     [2, 0, 3, 2, 0, 1]
+
+    Scores:
     """
 
     response = prompt_gemini(prompt)
