@@ -24,10 +24,10 @@ def setup_subparser(subparser: argparse._SubParsersAction) -> None:
 
     ### Semantic search based on semantically chunked embeddings
     search_chunked_parser = semantic_subparser.add_parser(
-        "search_chunked",
+        "chunk-search",
         help="Semantic search based on semantically chunked embeddings.",
     )
-    search_chunked_parser.add_argument("query", type=str, help="Search query")
+    search_chunked_parser.add_argument("query", type=str, help="Search query.")
     search_chunked_parser.add_argument(
         "--limit",
         type=int,
@@ -37,13 +37,13 @@ def setup_subparser(subparser: argparse._SubParsersAction) -> None:
 
     ### Build semantically chunked embeddings
     semantic_subparser.add_parser(
-        "build_chunk_embeddings",
+        "build-chunk-embeddings",
         help="Generate semantically chunked embeddings and store them on disk.",
     )
 
     ### Create semantic chunks
     chunk_semantic_parser = semantic_subparser.add_parser(
-        "chunk_semantic", help="Create semantic chunks from a single input text."
+        "chunk-semantic", help="Create semantic chunks from a single input text."
     )
     chunk_semantic_parser.add_argument("text", type=str, help="Text to chunk.")
     chunk_semantic_parser.add_argument(
@@ -88,13 +88,13 @@ def setup_subparser(subparser: argparse._SubParsersAction) -> None:
 
     ### Embed movie descriptions
     semantic_subparser.add_parser(
-        "build_embeddings",
+        "build-embeddings",
         help="Generate single embeddings from movie descriptions and store them on disk.",
     )
 
     ### Verify embeddings
     semantic_subparser.add_parser(
-        "verify_embeddings", help="Verify simple embeddings for the movie dataset."
+        "verify-embeddings", help="Verify simple embeddings for the movie dataset."
     )
 
     ### Embed search query
@@ -105,7 +105,7 @@ def setup_subparser(subparser: argparse._SubParsersAction) -> None:
 
     ### Verify embedding model
     semantic_subparser.add_parser(
-        "verify_model", help="Check if embedding model is loaded correctly."
+        "verify-model", help="Check if embedding model is loaded correctly."
     )
 
     semantic_parser.set_defaults(func=execute, subparser=semantic_parser)
@@ -113,11 +113,11 @@ def setup_subparser(subparser: argparse._SubParsersAction) -> None:
 
 def execute(args: argparse.Namespace, _: list) -> None:
     match args.command:
-        case "search_chunked":
+        case "chunk-search":
             search_chunked_command(args.query, args.limit)
-        case "build_chunk_embeddings":
+        case "build-chunk-embeddings":
             build_chunk_embeddings_command()
-        case "chunk_semantic":
+        case "chunk-semantic":
             print(f"Semantically chunking {len(args.text)} characters.")
             chunks = chunk_semantic(args.text, args.max_chunk_size, args.overlap)
             for i, chunk in enumerate(chunks, 1):
@@ -129,13 +129,13 @@ def execute(args: argparse.Namespace, _: list) -> None:
                 print(f"{i}. {chunk}")
         case "search":
             search_command(args.query, args.limit)
-        case "build_embeddings":
+        case "build-embeddings":
             build_embeddings_command()
-        case "verify_embeddings":
+        case "verify-embeddings":
             verify_embeddings_command()
         case "embed":
             embed_command(args.text)
-        case "verify_model":
+        case "verify-model":
             verify_model_command()
         case _:
             args.subparser.print_help()

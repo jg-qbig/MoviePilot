@@ -95,8 +95,8 @@ class SemanticSearch:
 
 
 class ChunkedSemanticSearch(SemanticSearch):
-    def __init__(self, model_name: str = "all-MiniLM-L6-v2") -> None:
-        super().__init__(model_name)
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.chunk_embeddings = None
         self.chunk_metadata = None
 
@@ -110,8 +110,9 @@ class ChunkedSemanticSearch(SemanticSearch):
                 max_chunk_size=MAX_SEMANTIC_CHUNK_SIZE,
                 overlap=CHUNK_OVERLAP,
             )
-            # Adding title introduces heavy bias
-            # doc_chunks.insert(0, doc["title"])
+
+            # Include title
+            doc_chunks.insert(0, doc["title"])
 
             for chunk_idx, chunk in enumerate(doc_chunks):
                 chunks.append(chunk)
@@ -228,15 +229,15 @@ def fixed_size_chunking(
         chunk_words = words[i : i + max_chunk_size]
         if chunks and len(chunk_words) <= overlap:
             break
-
         chunks.append(" ".join(chunk_words))
         i = i + max_chunk_size - overlap
-
     return chunks
 
 
 def chunk_semantic(
-    text: str, max_chunk_size: int = MAX_CHUNK_SIZE, overlap: int = CHUNK_OVERLAP
+    text: str,
+    max_chunk_size: int = MAX_SEMANTIC_CHUNK_SIZE,
+    overlap: int = CHUNK_OVERLAP,
 ):
     text = text.strip()
     if not text:

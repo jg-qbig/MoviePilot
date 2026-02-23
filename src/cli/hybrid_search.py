@@ -112,10 +112,9 @@ def rrf_search_command(
 
     if rerank:
         results = index.rrf_search(enhanced_query, k, limit * SEARCH_LIMIT_MULTIPLIER)
+        results = rerank_results(query, results, method=rerank, limit=limit)
     else:
         results = index.rrf_search(enhanced_query, k, limit)
-
-    results = rerank_results(query, results, method=rerank, limit=limit)
 
     print_results(results, score_label="RRF Score")
     return results

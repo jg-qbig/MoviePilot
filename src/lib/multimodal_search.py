@@ -13,15 +13,15 @@ class MultimodalSearch:
     def __init__(self, documents: list, model_name="clip-ViT-B-32"):
         self.model = SentenceTransformer(
             model_name,
-            model_kwargs={"use_fast": True},
             tokenizer_kwargs={"use_fast": True},
-            config_kwargs={"use_fast": True},
         )
         self.documents = documents
         self.texts = [f"{d['title']}: {d['description']}" for d in documents]
         self.text_embeddings = self.model.encode(self.texts)
 
     def embed_image(self, img_path: str):
+        if not img_path:
+            raise ValueError("No image path provided.")
         img_content = Image.open(img_path)
         embedding = self.model.encode([img_content], show_progress_bar=True)
         return embedding[0]
@@ -58,19 +58,16 @@ def multimodal_prompt_gemini(query: str, img_path: str) -> str:
 
     prompt = f"""
     You are a universal image & OCR assistant.
-    Your task is to describe everything visible in the image and transcribe any text exactly as it appears.
+    Your task is to infer an optimal search query for a movie search engine based on the input image.
 
     You should:
-    - Give a clear, factual description of the visible scene (objects, people, setting)
-    - Remain strictly factual; avoid opinions or guesses
+    - Describe relevant object, people and settings
     - Focus on completeness while being as concise as possible
-    - Starting from the top-left, list every line of visible text in order
-    - Preserve original spelling, punctuation, capitalization, and line breaks
-    - If any portion is unreadable, write [illegible]
-    - Do not correct errors, translate, summarize, or infer hidden context
-    - Output only the scene description followed by the raw transcription—nothing else
+    - Transcribe any visible text in order
 
-    Image description:
+    Your final query should be optimized to retrieve the best results in a hybrid search engine that uses keyword and vectorized semantic search.
+
+    Query:
     """
 
     parts = [

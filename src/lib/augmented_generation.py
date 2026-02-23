@@ -1,20 +1,6 @@
 from src.lib.utils import prompt_gemini, results_to_str
 
 
-def generate(question: str, results: list[dict]) -> str:
-    prompt = f"""
-    Answer the question below based on the provided movie descriptions.
-
-    Question: {question}
-
-    Descriptions: {results_to_str(results)}
-
-    Answer:
-    """
-
-    return prompt_gemini(prompt)
-
-
 def summarize(question: str, results: list[dict]) -> str:
     prompt = f"""
     You will be provided with a list movies and their descriptions as context.
@@ -54,7 +40,6 @@ def summarize_with_citations(question: str, results: list[dict]) -> str:
 
     Answer:
     """
-    print(prompt)
     return prompt_gemini(prompt)
 
 

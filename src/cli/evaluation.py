@@ -23,12 +23,6 @@ def setup_subparser(subparser: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Use llm expert to evaluate search results.",
     )
-    eval_parser.add_argument(
-        "extra_args",
-        nargs=argparse.REMAINDER,
-        help="Extra keyword arguments to pass on to the selected search method.",
-    )
-
     eval_parser.set_defaults(func=execute, subparser=eval_parser)
 
 

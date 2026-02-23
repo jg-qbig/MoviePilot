@@ -19,29 +19,29 @@ def setup_subparser(subparser: argparse._SubParsersAction) -> None:
 
     ### Image search
     search_parser = multimodal_subparser.add_parser(
-        "search", help="Search movie based on image."
+        "image-search", help="Search movie based on image."
     )
-    search_parser.add_argument("--path", type=str, help="Path to image.")
+    search_parser.add_argument("path", type=str, help="Path to image.")
 
     ### Image description
     describe_parser = multimodal_subparser.add_parser(
         "augment", help="Let model describe image as text."
     )
-    describe_parser.add_argument("--query", type=str, help="Search query.")
-    describe_parser.add_argument("--path", type=str, help="Path to image.")
+    describe_parser.add_argument("query", type=str, help="Search query.")
+    describe_parser.add_argument("path", type=str, help="Path to image.")
 
     ### Verify embeddings
     verify_parser = multimodal_subparser.add_parser(
         "verify", help="Check if image embeddings are valid."
     )
-    verify_parser.add_argument("--path", type=str, help="Path to image.")
+    verify_parser.add_argument("path", type=str, help="Path to image.")
 
     multimodal_parser.set_defaults(func=execute, subparser=multimodal_parser)
 
 
 def execute(args: argparse.Namespace, _: list) -> None:
     match args.command:
-        case "search":
+        case "image-search":
             data = load_movies()
             index = MultimodalSearch(data)
             results = index.search(args.path)

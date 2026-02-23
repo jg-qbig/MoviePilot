@@ -4,7 +4,7 @@ import time
 
 from sentence_transformers import CrossEncoder
 
-from src.lib.utils import MAX_DESCRIPTION, SEARCH_LIMIT, print_results, prompt_gemini
+from src.lib.utils import MAX_DESCRIPTION, SEARCH_LIMIT, prompt_gemini
 
 
 def rate_individual(query: str, results: list[dict]) -> list[dict]:
@@ -98,8 +98,7 @@ def rerank_results(
     method: str = "",
     limit: int = SEARCH_LIMIT,
 ) -> list[dict]:
-    print("Reranking Results ...")
-    print_results(results)
+    print(f"Reranking Results using {method}...")
 
     if method == "individual":
         return rate_individual(query, results)[:limit]

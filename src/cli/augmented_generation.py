@@ -1,9 +1,8 @@
 import argparse
 
-from src.lib.utils import SEARCH_LIMIT
+from src.lib.utils import SEARCH_LIMIT, RRF_K
 from src.cli.hybrid_search import rrf_search_command
 from src.lib.augmented_generation import (
-    generate,
     summarize,
     summarize_with_citations,
     question_answering,
@@ -51,33 +50,36 @@ def setup_subparser(subparser: argparse._SubParsersAction) -> None:
         default=SEARCH_LIMIT,
         help="Number of search results to be retrieved",
     )
-
-    ### Generate based on search results
-    gen_parser = rag_subparser.add_parser(
-        "generate", help="Generate LLM response based on retrieved search results."
-    )
-    gen_parser.add_argument("query", type=str, help="Search query.")
-
     rag_parser.set_defaults(func=execute, subparser=rag_parser)
 
 
-def execute(args: argparse.Namespace, _: list) -> None:
+def execute(args: argparse.Namespace, unknown_args: list) -> None:
+    extra_args = {
+        key.lstrip("-"): value
+        for key, value in zip(unknown_args[::2], unknown_args[1::2])
+    }
+    k = int(extra_args.get("k", RRF_K))
+    enhance = str(extra_args.get("enhance", ""))
+    rerank = str(extra_args.get("rerank", ""))
+
     match args.command:
         case "qa":
-            results = rrf_search_command(args.question, limit=args.limit)
+            results = rrf_search_command(
+                args.question, limit=args.limit, k=k, enhance=enhance, rerank=rerank
+            )
             response = question_answering(args.question, results)
             print(f"LLM Response:\n{response}")
         case "cite":
-            results = rrf_search_command(args.query, limit=args.limit)
+            results = rrf_search_command(
+                args.query, limit=args.limit, k=k, enhance=enhance, rerank=rerank
+            )
             response = summarize_with_citations(args.query, results)
             print(f"LLM Response:\n{response}")
         case "summarize":
-            results = rrf_search_command(args.query, limit=args.limit)
+            results = rrf_search_command(
+                args.query, limit=args.limit, k=k, enhance=enhance, rerank=rerank
+            )
             response = summarize(args.query, results)
-            print(f"LLM Response:\n{response}")
-        case "generate":
-            results = rrf_search_command(args.query)
-            response = generate(args.query, results)
             print(f"LLM Response:\n{response}")
         case _:
             args.subparser.print_help()

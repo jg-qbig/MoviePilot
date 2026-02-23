@@ -55,6 +55,9 @@ def expand_query(query: str) -> str:
     return prompt_gemini(prompt)
 
 
+# Prompt inspirations from https://smith.langchain.com/hub/search?q=evaluation
+
+
 def enhance_query(query: str, method: str = "") -> str:
     if method == "spell":
         enhanced_query = correct_spelling(query)
