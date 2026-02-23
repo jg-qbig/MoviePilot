@@ -25,6 +25,7 @@ class SemanticSearch:
     def __init__(self, model_name="all-MiniLM-L6-v2") -> None:
         self.model = SentenceTransformer(model_name)
         self.embeddings = []
+        self.embeddings_path = EMBEDDINGS_PATH
         self.documents = []
 
     def generate_embedding(self, text: str):
@@ -39,8 +40,8 @@ class SemanticSearch:
             contents.append(f"{doc["title"]}: {doc["description"]}")
         self.embeddings = self.model.encode(contents, show_progress_bar=True)
 
-        os.makedirs(os.path.dirname(EMBEDDINGS_PATH), exist_ok=True)
-        np.save(EMBEDDINGS_PATH, self.embeddings)
+        os.makedirs(os.path.dirname(self.embeddings_path), exist_ok=True)
+        np.save(self.embeddings_path, self.embeddings)
 
         curr_hash = get_titles_hash(self.documents)
         with open(HASH_PATH, "w", encoding="utf8") as f:
@@ -52,12 +53,12 @@ class SemanticSearch:
         self.documents = documents
         curr_hash = get_titles_hash(documents)
 
-        if os.path.exists(EMBEDDINGS_PATH) and os.path.exists(HASH_PATH):
+        if os.path.exists(self.embeddings_path) and os.path.exists(HASH_PATH):
             with open(HASH_PATH, "r", encoding="utf8") as f:
                 stored_hash = f.read().strip()
 
             if stored_hash == curr_hash:
-                self.embeddings = np.load(EMBEDDINGS_PATH)
+                self.embeddings = np.load(self.embeddings_path)
                 return self.embeddings
 
         return self.build_embeddings(documents)
@@ -70,25 +71,21 @@ class SemanticSearch:
 
         query_embedding = self.generate_embedding(query)
 
-        similarities = []
-        for i, embedding in enumerate(self.embeddings):
-            similarities.append(
-                (
-                    cosine_similarity(query_embedding, embedding),
-                    self.documents[i],
-                )
-            )
+        for embedding, doc in zip(self.embeddings, self.documents):
+            doc["similarity"] = cosine_similarity(embedding, query_embedding)
 
-        similarities = sorted(similarities, key=lambda x: x[0], reverse=True)
+        sorted_docs = sorted(
+            self.documents, key=lambda x: x["similarity"], reverse=True
+        )
 
         results = []
-        for score, doc in similarities[:limit]:
+        for doc in sorted_docs[:limit]:
             results.append(
                 format_results(
                     doc_id=doc["id"],
                     title=doc["title"],
                     document=doc["description"],
-                    score=score,
+                    score=doc["similarity"],
                 )
             )
         return results
@@ -99,6 +96,7 @@ class ChunkedSemanticSearch(SemanticSearch):
         super().__init__(**kwargs)
         self.chunk_embeddings = None
         self.chunk_metadata = None
+        self.embeddings_path = CHUNK_EMBEDDINGS_PATH
 
     def build_chunk_embeddings(self, documents: list[dict]) -> np.ndarray:
         self.documents = documents
@@ -126,8 +124,8 @@ class ChunkedSemanticSearch(SemanticSearch):
         self.chunk_embeddings = self.model.encode(chunks, show_progress_bar=True)
         self.chunk_metadata = chunks_meta
 
-        os.makedirs(os.path.dirname(CHUNK_EMBEDDINGS_PATH), exist_ok=True)
-        np.save(CHUNK_EMBEDDINGS_PATH, self.chunk_embeddings)
+        os.makedirs(os.path.dirname(self.embeddings_path), exist_ok=True)
+        np.save(self.embeddings_path, self.chunk_embeddings)
         with open(CHUNK_EMBEDDINGS_META_PATH, "w", encoding="utf8") as f:
             json.dump({"chunks": chunks_meta, "total_chunks": len(chunks)}, f, indent=2)
 
@@ -142,7 +140,7 @@ class ChunkedSemanticSearch(SemanticSearch):
         curr_hash = get_titles_hash(documents)
 
         if (
-            os.path.exists(CHUNK_EMBEDDINGS_PATH)
+            os.path.exists(self.embeddings_path)
             and os.path.exists(CHUNK_EMBEDDINGS_META_PATH)
             and os.path.exists(HASH_PATH)
         ):
@@ -150,7 +148,7 @@ class ChunkedSemanticSearch(SemanticSearch):
                 stored_hash = f.read().strip()
 
             if stored_hash == curr_hash:
-                self.chunk_embeddings = np.load(CHUNK_EMBEDDINGS_PATH)
+                self.chunk_embeddings = np.load(self.embeddings_path)
                 with open(CHUNK_EMBEDDINGS_META_PATH, "r", encoding="utf8") as f:
                     data = json.load(f)
                     self.chunk_metadata = data["chunks"]

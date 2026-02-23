@@ -54,7 +54,7 @@ def format_results(
         "id": doc_id,
         "title": title,
         "document": document,
-        "score": round(score, SCORE_PRECISION),
+        "score": round(float(score), SCORE_PRECISION),
         "metadata": metadata if metadata else {},
     }
 

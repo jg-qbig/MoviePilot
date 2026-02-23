@@ -83,7 +83,10 @@ def setup_subparser(subparser: argparse._SubParsersAction) -> None:
     )
     search_parser.add_argument("query", type=str, help="Search query")
     search_parser.add_argument(
-        "--limit", type=int, default=5, help="Number of search results to show."
+        "--limit",
+        type=int,
+        default=SEARCH_LIMIT,
+        help="Number of search results to show.",
     )
 
     ### Embed movie descriptions

@@ -1,36 +1,57 @@
+import os
 import mimetypes
 
 from google.genai.types import Part
 from PIL import Image
 from sentence_transformers import SentenceTransformer
+import numpy as np
 
 from src.lib.query_enhancement import prompt_gemini
-from src.lib.semantic_search import cosine_similarity
-from src.lib.utils import SEARCH_LIMIT, format_results, load_movies
+from src.lib.semantic_search import SemanticSearch, cosine_similarity
+from src.lib.utils import CACHE_PATH, HYBRID_ALPHA, SEARCH_LIMIT, format_results
 
 
-class MultimodalSearch:
-    def __init__(self, documents: list, model_name="clip-ViT-B-32"):
+MULTIMODAL_EMBEDDINGS_PATH = os.path.join(CACHE_PATH, "multimodal_embeddings.npy")
+
+
+class MultimodalSearch(SemanticSearch):
+    def __init__(self, model_name="clip-ViT-B-32"):
+        super().__init__(model_name=model_name)
         self.model = SentenceTransformer(
             model_name,
             tokenizer_kwargs={"use_fast": True},
         )
-        self.documents = documents
-        self.texts = [f"{d['title']}: {d['description']}" for d in documents]
-        self.text_embeddings = self.model.encode(self.texts)
+        self.embeddings_path = MULTIMODAL_EMBEDDINGS_PATH
 
-    def embed_image(self, img_path: str):
-        if not img_path:
-            raise ValueError("No image path provided.")
-        img_content = Image.open(img_path)
-        embedding = self.model.encode([img_content], show_progress_bar=True)
-        return embedding[0]
+    def generate_embedding(self, input: str):
+        if not input.strip():
+            raise ValueError("Input is empty.")
 
-    def search(self, img_path: str, limit: int = SEARCH_LIMIT):
-        img_embedding = self.embed_image(img_path)
-        results = []
-        for embedding, doc in zip(self.text_embeddings, self.documents):
-            doc["similarity"] = cosine_similarity(embedding, img_embedding)
+        is_image = os.path.isfile(input) and input.lower().endswith(
+            (".png", ".jpg", ".jpeg", ".webp")
+        )
+
+        if is_image:
+            img_content = Image.open(input)
+            embedding = self.model.encode([img_content], show_progress_bar=True)
+            return embedding[0]
+        return self.model.encode([input])[0]
+
+    def search_multi(
+        self,
+        query: str,
+        img_path: str,
+        limit: int = SEARCH_LIMIT,
+        alpha: float = HYBRID_ALPHA,
+    ):
+        query_embedding = normalize(self.generate_embedding(query))
+        img_embedding = normalize(self.generate_embedding(img_path))
+
+        combined_embedding = alpha * query_embedding + (1 - alpha) * img_embedding
+
+        for embedding, doc in zip(self.embeddings, self.documents):
+            # Seems to work much better (less bias) than cosine similarity
+            doc["similarity"] = np.dot(normalize(embedding), combined_embedding)
 
         sorted_docs = sorted(
             self.documents, key=lambda x: x["similarity"], reverse=True
@@ -47,6 +68,10 @@ class MultimodalSearch:
                 )
             )
         return results
+
+
+def normalize(embedding: np.ndarray) -> np.ndarray:
+    return np.linalg.norm(embedding, axis=-1, keepdims=True)
 
 
 def multimodal_prompt_gemini(query: str, img_path: str) -> str:
@@ -77,10 +102,3 @@ def multimodal_prompt_gemini(query: str, img_path: str) -> str:
     ]
 
     return prompt_gemini(parts)
-
-
-def verify_image_embedding(img_path: str):
-    data = load_movies()
-    index = MultimodalSearch(data)
-    embedding = index.embed_image(img_path)
-    print(f"Embedding shape: {embedding.shape[0]} dimensions")
